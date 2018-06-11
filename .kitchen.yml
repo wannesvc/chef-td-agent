@@ -1,72 +1,73 @@
 ---
 driver:
-  name: docker
-  use_sudo: false
+  name: ec2
+  aws_ssh_key_id: aem-nat
+  security_group_ids: [ sg-381dbb40]
+  region: eu-west-1
+  availability_zone: a
+  require_chef_omnibus: 12
+  subnet_id: subnet-966cf3e1
+  iam_profile_name: aws-opsworks-ec2-role
+  instance_type: t2.medium
+  associate_public_ip: false
+  interface: private
+  shared_credentials_profile: as
+  image_id: ami-ccbf9ab5 #ami-7d50491b
+
+transport:
+  name: sftp
+  ssh_key: ~/.ssh/as/aem-nat.pem
+  username: ec2-user
 
 provisioner:
   name: chef_zero
-  log_level: info
-  deprecations_as_errors: true
+  # You may wish to disable always updating cookbooks in CI or other testing environments.
+  # For example:
+  #   always_update_cookbooks: <%= !ENV['CI'] %>
+  always_update_cookbooks: true
+
+verifier:
+  name: inspec
 
 platforms:
-  - name: ubuntu-trusty
-    driver_config:
-      platform: ubuntu
-      image: ubuntu:14.04
-  - name: ubuntu-xenial
-    driver_config:
-      platform: ubuntu
-      image: ubuntu:16.04
-  - name: centos-centos6
-    driver_config:
-      platform: centos
-      image: centos:centos6
-  - name: centos-centos7
-    driver_config:
-      platform: centos
-      image: centos:centos7
+  - name: amazon-linux
+
+
 
 suites:
-# - name: 1x-chef12
-#   attributes:
-#     td_agent:
-#       version: 1
-#   driver_config:
-#     require_chef_omnibus: 12.21.3
-#   excludes:
-#     - ubuntu-trusty-chef12
-#     - ubuntu-xenial-chef12
-#   run_list:
-#     - recipe[smoke::default]
-  - name: 2x-chef12
+  - name: 3x-chef12-amzn1
     attributes:
       td_agent:
-        version: 2.2.0
+        version: 3.1.1
     driver_config:
       require_chef_omnibus: 12.21.3
+      image_id: ami-ccbf9ab5 #ami-7d50491b
     run_list:
-      - recipe[smoke::default]
-  - name: 3x-chef12
+      - recipe[td-agent::default]
+  - name: 3x-chef12-amzn2
     attributes:
       td_agent:
-        version: 3.1.0
+        version: 3.1.1
     driver_config:
       require_chef_omnibus: 12.21.3
+      image_id: ami-921423eb
     run_list:
-      - recipe[smoke::default]
-  - name: 2x-chef13
+      - recipe[td-agent::default]
+  - name: 2x-chef12-amzn1
     attributes:
       td_agent:
-        version: 2.2.0
+        version: 2.1.1
     driver_config:
-      require_chef_omnibus: 13.2.20
+      require_chef_omnibus: 12.21.3
+      image_id: ami-ccbf9ab5 #ami-7d50491b
     run_list:
-      - recipe[smoke::default]
-  - name: 3x-chef13
+      - recipe[td-agent::default]
+  - name: 2x-chef12-amzn2
     attributes:
       td_agent:
-        version: 3.1.0
+        version: 2.1.1
     driver_config:
-      require_chef_omnibus: 13.2.20
+      require_chef_omnibus: 12.21.3
+      image_id: ami-921423eb
     run_list:
-      - recipe[smoke::default]
+      - recipe[td-agent::default]
